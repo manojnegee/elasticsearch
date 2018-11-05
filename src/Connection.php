@@ -58,7 +58,13 @@ class Connection
 
         $clientBuilder = ClientBuilder::create();
 
+        if (!empty($config['handler'])) {
+            $clientBuilder->setHandler($config['handler']);
+        }
+
         $clientBuilder->setHosts($config["servers"]);
+
+        $clientBuilder = self::configureLogging($clientBuilder,$config);
 
         $query = new Query($clientBuilder->build());
 
@@ -92,10 +98,18 @@ class Connection
 
         if (array_key_exists($name, $this->config["connections"])) {
 
+            $config = $this->config["connections"][$name];
+
             // Instantiate a new ClientBuilder
             $clientBuilder = ClientBuilder::create();
 
-            $clientBuilder->setHosts($this->config["connections"][$name]["servers"]);
+            $clientBuilder->setHosts($config["servers"]);
+
+            $clientBuilder = self::configureLogging($clientBuilder,$config);
+
+            if (!empty($config['handler'])) {
+                $clientBuilder->setHandler($config['handler']);
+            }
 
             // Build the client object
             $connection = $clientBuilder->build();
@@ -108,7 +122,21 @@ class Connection
         }
 
         $this->app->abort(500, "Invalid elasticsearch connection driver `" . $name . "`");
+    }
 
+
+    /**
+     * @param ClientBuilder $clientBuilder
+     * @param array $config
+     * @return ClientBuilder
+     */
+    public static function configureLogging(ClientBuilder $clientBuilder, array $config)
+    {
+        if (array_get($config,'logging.enabled')) {
+            $logger = ClientBuilder::defaultLogger(array_get($config,'logging.location'), array_get($config,'logging.level','all'));
+            $clientBuilder->setLogger($logger);
+        }
+        return $clientBuilder;
     }
 
 
@@ -129,7 +157,6 @@ class Connection
         }
 
         return $query;
-
     }
 
     /**
@@ -145,7 +172,6 @@ class Connection
         }
 
         return false;
-
     }
 
 

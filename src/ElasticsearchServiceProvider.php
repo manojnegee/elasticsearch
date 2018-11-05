@@ -12,12 +12,20 @@ use Basemkhirat\Elasticsearch\Commands\CreateIndexCommand;
 use Basemkhirat\Elasticsearch\Commands\DropIndexCommand;
 use Basemkhirat\Elasticsearch\Commands\UpdateIndexCommand;
 
+/**
+ * Class ElasticsearchServiceProvider
+ * @package Basemkhirat\Elasticsearch
+ */
 class ElasticsearchServiceProvider extends ServiceProvider
 {
 
-    function __construct()
+    /**
+     * ElasticsearchServiceProvider constructor.
+     * @param Application $app
+     */
+    function __construct($app)
     {
-        $this->app = app();
+        $this->app = $app;
     }
 
     /**
@@ -101,6 +109,5 @@ class ElasticsearchServiceProvider extends ServiceProvider
         $this->app->bind('es', function () {
             return new Connection();
         });
-
     }
 }
